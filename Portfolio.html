@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <title>Ubuntu DBA Terminal Portfolio</title>
+    <style>
+        :root {
+            --ubuntu-purple: #300a24;
+            --ubuntu-orange: #e95420;
+            --terminal-text: #ffffff;
+            --terminal-prompt: #4e9a06;
+            --terminal-input: #34e2e2;
+            --panel-bg: #2c001e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ubuntu Mono', monospace;
+        }
+
+        body {
+            background: var(--ubuntu-purple);
+            color: var(--terminal-text);
+            line-height: 1.4;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .ubuntu-desktop {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-panel {
+            background: var(--panel-bg);
+            height: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            z-index: 1000;
+        }
+
+        .panel-left, .panel-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            height: 100%;
+        }
+
+        .terminal-window {
+            margin: 50px auto;
+            width: 90%;
+            max-width: 900px;
+            height: calc(100vh - 150px);
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: #3d3d3d;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .window-buttons {
+            display: flex;
+            gap: 8px;
+            margin-right: 15px;
+        }
+
+        .window-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .close { background: #ff5f57; }
+        .minimize { background: #ffbd2e; }
+        .maximize { background: #28c941; }
+
+        .terminal-title {
+            color: #ddd;
+            font-size: 14px;
+        }
+
+        .terminal-content {
+            padding: 20px;
+            height: calc(100% - 35px);
+            overflow-y: auto;
+        }
+
+        .line {
+            margin: 5px 0;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .prompt {
+            color: var(--terminal-prompt);
+            margin-right: 8px;
+        }
+
+        .command {
+            color: var(--terminal-input);
+        }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .input-field {
+            background: transparent;
+            border: none;
+            color: var(--terminal-input);
+            font-family: 'Ubuntu Mono', monospace;
+            font-size: inherit;
+            flex-grow: 1;
+            outline: none;
+            caret-color: var(--terminal-input);
+        }
+
+        .help-menu {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--ubuntu-orange);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .project-card, .skill-card {
+            border: 1px solid var(--ubuntu-orange);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            transition: transform 0.3s;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .project-card:hover, .skill-card:hover {
+            transform: translateX(10px);
+            border-color: var(--terminal-input);
+        }
+
+        .ascii-art {
+            color: var(--ubuntu-orange);
+            white-space: pre;
+            margin: 10px 0;
+        }
+
+        .notification {
+            position: fixed;
+            top: 40px;
+            right: 20px;
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+            animation: slideIn 0.3s ease;
+            color: var(--terminal-text);
+            border: 1px solid var(--ubuntu-orange);
+        }
+
+        /* Menu Styles */
+        .menu-button {
+            cursor: pointer;
+            padding: 0 10px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            color: var(--terminal-text);
+            position: relative;
+        }
+
+        .menu-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--panel-bg);
+            min-width: 200px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0 0 4px 4px;
+            display: none;
+            z-index: 1001;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .menu-item {
+            padding: 8px 16px;
+            color: var(--terminal-text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-item:hover {
+            background: var(--ubuntu-orange);
+        }
+
+        .menu-item i {
+            width: 16px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .error { color: #ff5f57; }
+    </style>
+</head>
+<body>
+    <div class="ubuntu-desktop">
+        <div class="top-panel">
+            <div class="panel-left">
+                <!-- Menu buttons will be added by JavaScript -->
+            </div>
+            <div class="panel-right">
+                <span class="time"></span>
+            </div>
+        </div>
+
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="window-buttons">
+                    <div class="window-button close"></div>
+                    <div class="window-button minimize"></div>
+                    <div class="window-button maximize"></div>
+                </div>
+                <div class="terminal-title">john@portfolio:~</div>
+            </div>
+            <div class="terminal-content" id="terminal">
+                <div class="line">
+                    <span class="ascii-art">
+   ____  ____    _    
+  |  _ \| __ )  / \   
+  | | | |  _ \ / _ \  
+  | |_| | |_) / ___ \ 
+  |____/|____/_/   \_\
+                    </span>
+                </div>
+                <div class="line">Welcome to DBA Portfolio Terminal v1.0</div>
+                <div class="line">Type 'help' for available commands</div>
+                <div class="input-line">
+                    <span class="prompt">john@portfolio:~$</span>
+                    <input type="text" class="input-field" autofocus>
+                </div>
+            </div>
+        </div>
+        <div class="notification"></div>
+        <div class="overlay"></div>
+    </div>
+
+    <script>
+        class Terminal {
+            constructor() {
+                this.terminal = document.getElementById('terminal');
+                this.input = document.querySelector('.input-field');
+                this.history = [];
+                this.historyIndex = -1;
+                this.setupListeners();
+                this.setupClock();
+                this.setupMenus();
+            }
+
+            setupListeners() {
+                this.input.addEventListener('keydown', (e) => this.handleInput(e));
+                document.querySelector('.close').addEventListener('click', () => this.handleClose());
+                document.querySelector('.maximize').addEventListener('click', () => this.handleMaximize());
+                
+                this.input.addEventListener('blur', () => {
+                    setTimeout(() => this.input.focus(), 10);
+                });
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && e.target === document.body) {
+                        e.preventDefault();
+                    }
+                    if (e.key === 'f' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                    }
+                });
+
+                this.terminal.addEventListener('click', () => {
+                    this.input.focus();
+                });
+            }
+
+            setupMenus() {
+                const panelLeft = document.querySelector('.panel-left');
+                panelLeft.innerHTML = '';
+                
+                const activitiesButton = document.createElement('div');
+                activitiesButton.className = 'menu-button';
+                activitiesButton.id = 'activities-button';
+                activitiesButton.innerHTML = `
+                    Activities
+                    <div class="dropdown-menu" id="activities-menu">
+                        <div class="menu-item" onclick="terminal.handleCommand('about')">
+                            <i>&#xe0ba</i> About Me
+                        </div>
+                        <div class="menu-item" onclick="terminal.handleCommand('skills')">
+                            <i>&#xe0ba</i> Skills
+                        </div>
+                        <div class="menu-item" onclick="terminal.handleCommand('projects')">
+                            <i>&#xe0ba;</i> Projects
+                        </div>
+                        <div class="menu-item" onclick="terminal.handleCommand('contact')">
+                            <i>&#xe0ba;</i> Contact
+                        </div>
+                    </div>
+                `;
+
+                const applicationsButton = document.createElement('div');
+                applicationsButton.className = 'menu-button';
+                applicationsButton.id = 'applications-button';
+                applicationsButton.innerHTML = `
+                    Applications
+                    <div class="dropdown-menu" id="applications-menu">
+                        <div class="menu-item" onclick="terminal.openTerminal()">
+                            <i>&#xe0ba;</i> Terminal
+                        </div>
+                        <div class="menu-item" onclick="terminal.handleCommand('help')">
+                            <i>&#xe0ba;</i> Help
+                        </div>
+                        <div class="menu-item" onclick="terminal.handleCommand('clear')">
+                            <i>&#xe0ba;</i> Clear Terminal
+                        </div>
+                    </div>
+                `;
+
+                panelLeft.appendChild(activitiesButton);
+                panelLeft.appendChild(applicationsButton);
+
+                const activitiesMenu = document.getElementById('activities-menu');
+                const applicationsMenu = document.getElementById('applications-menu');
+                const overlay = document.querySelector('.overlay');
+
+                const closeMenus = () => {
+                    activitiesMenu.classList.remove('show');
+                    applicationsMenu.classList.remove('show');
+                    overlay.classList.remove('show');
+                };
+
+                activitiesButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isOpen = activitiesMenu.classList.contains('show');
+                    closeMenus();
+                    if (!isOpen) {
+                        activitiesMenu.classList.add('show');
+                        overlay.classList.add('show');
+                    }
+                });
+
+                applicationsButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isOpen = applicationsMenu.classList.contains('show');
+                    closeMenus();
+                    if (!isOpen) {
+                        applicationsMenu.classList.add('show');
+                        overlay.classList.add('show');
+                    }
+                });
+
+                document.addEventListener('click', closeMenus);
+                overlay.addEventListener('click', closeMenus);
+                activitiesMenu.addEventListener('click', (e) => e.stopPropagation());
+                applicationsMenu.addEventListener('click', (e) => e.stopPropagation());
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Meta' || e.key === 'Super') {
+                        e.preventDefault();
+                        activitiesButton.click();
+                    }
+                });
+            }
+
+            handleCommand(command) {
+                document.querySelector('.overlay').classList.remove('show');
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+                
+                this.input.value = command;
+                const event = new KeyboardEvent('keydown', { key: 'Enter' });
+                this.handleInput(event);
+            }
+
+            openTerminal() {
+                this.input.focus();
+                document.querySelector('.overlay').classList.remove('show');
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            }
+
+            setupClock() {
+                const updateClock = () => {
+                    const now = new Date();
+                    const timeString = now.toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit'
+                    });
+                    document.querySelector('.time').textContent = timeString;
+                };
+                setInterval(updateClock, 1000);
+                updateClock();
+            }
+
+            handleInput(e) {
+                if (e.key === 'Enter') {
+                    const command = this.input.value.trim();
+                    if (command) {
+                        this.history.push(command);
+                        this.historyIndex = this.history.length;
+                        this.executeCommand(command);
+                    }
+                    this.input.value = '';
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (this.historyIndex > 0) {
+                        this.historyIndex--;
+                        this.input.value = this.history[this.historyIndex];
+                    }
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (this.historyIndex < this.history.length - 1) {
+this.historyIndex++;
+                        this.input.value = this.history[this.historyIndex];
+                    } else {
+                        this.historyIndex = this.history.length;
+                        this.input.value = '';
+                    }
+                }
+            }
+
+            executeCommand(command) {
+                this.addLine(`<span class="prompt">john@portfolio:~$</span> ${command}`);
+                
+                const cmd = command.toLowerCase();
+                const commands = {
+                    help: () => this.showHelp(),
+                    clear: () => this.clear(),
+                    about: () => this.showAbout(),
+                    skills: () => this.showSkills(),
+                    projects: () => this.showProjects(),
+                    contact: () => this.showContact(),
+                    exit: () => this.handleClose()
+                };
+
+                if (commands[cmd]) {
+                    commands[cmd]();
+                    this.showNotification(`Executed: ${cmd}`);
+                } else {
+                    this.addLine(`<span class="error">Command not found: ${cmd}</span>`);
+                }
+            }
+
+            addLine(content) {
+                const line = document.createElement('div');
+                line.className = 'line';
+                line.innerHTML = content;
+                this.terminal.insertBefore(line, this.terminal.lastElementChild);
+                this.terminal.scrollTop = this.terminal.scrollHeight;
+            }
+
+            showHelp() {
+                const help = `
+                    <div class="help-menu">
+                        Available commands:
+                        â€¢ help     - Show this help menu
+                        â€¢ about    - Display information about me
+                        â€¢ skills   - List my technical skills
+                        â€¢ projects - View my recent projects
+                        â€¢ contact  - Get my contact information
+                        â€¢ clear    - Clear the terminal
+                        â€¢ exit     - Close the terminal
+                    </div>
+                `;
+                this.addLine(help);
+            }
+
+            showAbout() {
+                const about = `
+                    <div class="project-card">
+                        Senior Database Administrator
+                        â€¢ 10+ years experience in Oracle & SQL Server
+                        â€¢ Performance optimization specialist
+                        â€¢ Database security expert
+                        â€¢ High availability architect
+                    </div>
+                `;
+                this.addLine(about);
+            }
+
+            showSkills() {
+                const skills = `
+                    <div class="skill-card">
+                        Oracle Database
+                        â€¢ RAC Configuration
+                        â€¢ Performance Tuning
+                        â€¢ Data Guard
+                        â€¢ RMAN Backup/Recovery
+                    </div>
+                    <div class="skill-card">
+                        SQL Server
+                        â€¢ Always On Availability
+                        â€¢ Query Optimization
+                        â€¢ SSIS/SSRS
+                        â€¢ Performance Monitoring
+                    </div>
+                `;
+                this.addLine(skills);
+            }
+
+            showProjects() {
+                const projects = `
+                    <div class="project-card">
+                        Enterprise Migration
+                        â€¢ 10TB database migration
+                        â€¢ Zero data loss
+                        â€¢ 99.9% uptime maintained
+                    </div>
+                    <div class="project-card">
+                        Performance Optimization
+                        â€¢ 70% query performance improvement
+                        â€¢ Reduced CPU load by 40%
+                        â€¢ Optimized indexing strategy
+                    </div>
+                `;
+                this.addLine(projects);
+            }
+
+            showContact() {
+                const contact = `
+                    <div class="project-card">
+                        â€¢ Email: john@example.com
+                        â€¢ LinkedIn: linkedin.com/in/johndba
+                        â€¢ GitHub: github.com/johndba
+                        â€¢ Location: San Francisco, CA
+                    </div>
+                `;
+                this.addLine(contact);
+            }
+
+            clear() {
+                const inputLine = this.terminal.lastElementChild;
+                this.terminal.innerHTML = '';
+                this.terminal.appendChild(inputLine);
+            }
+
+            handleClose() {
+                document.body.innerHTML = '<div style="color: white; padding: 20px;">Terminal session ended.</div>';
+            }
+
+            handleMaximize() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+
+            showNotification(message) {
+                const notification = document.querySelector('.notification');
+                notification.textContent = message;
+                notification.style.display = 'block';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        // Initialize terminal
+        const terminal = new Terminal();
+    </script>
+</body>
+</html>
