@@ -260,9 +260,9 @@ class Terminal {
                     <div class="project-card">
                         Senior Database Administrator
                         <ul>
-                            <li> 10+ years experience in Oracle & SQL Server </li>
+                            <li> 4+ years experience in Oracle & SQL Server </li>
                             <li> Performance optimization specialist </li>
-                            <li> Database security expert </li>
+                            <li> Database troubleshooting expert </li>
                             <li> High availability architect </li>
                         </ul>
                     </div>
