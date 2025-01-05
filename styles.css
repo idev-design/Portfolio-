@@ -46,6 +46,25 @@ body {
   height: 100%;
 }
 
+#full-terminal {
+  display: none;
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  max-width: 800px;
+  height: 70%;
+  background-color: #1e1e1e;
+  z-index: 1000;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#full-terminal.terminal-window {
+  display: block;
+}
+
 .terminal-window {
   margin: 50px auto;
   width: 90%;
@@ -174,7 +193,7 @@ body {
 }
 
 .line h3 {
-  margin-left: 10%;
+  margin-left: 5%;
 }
 
 .notification {

@@ -1,5 +1,6 @@
 class Terminal {
     constructor () {
+        // this.full_terminal = document.getElementById( 'full-terminal' );
         this.terminal = document.getElementById( 'terminal' );
         this.input = document.querySelector( '.input-field' );
         this.history = [];
@@ -12,6 +13,7 @@ class Terminal {
     setupListeners() {
         this.input.addEventListener( 'keydown', ( e ) => this.handleInput( e ) );
         document.querySelector( '.close' ).addEventListener( 'click', () => this.handleClose() );
+        document.querySelector( '.minimize' ).addEventListener( 'click', () => this.handleMaximize() );
         document.querySelector( '.maximize' ).addEventListener( 'click', () => this.handleMaximize() );
 
         this.input.addEventListener( 'blur', () => {
@@ -215,6 +217,7 @@ class Terminal {
             skills: () => this.showSkills(),
             projects: () => this.showProjects(),
             contact: () => this.showContact(),
+            terminal: () => this.showTerminal(),
             exit: () => this.handleClose()
         };
 
@@ -331,11 +334,71 @@ class Terminal {
         this.terminal.innerHTML = '';
         this.terminal.appendChild( inputLine );
     }
+    /*
+        handleClose() {
+            // document.body.innerHTML = '<div style="color: white; padding: 20px;">Terminal session ended.</div>';
+            document.getElementById( "full-terminal" ).classList.remove( "terminal-window" );
+            document.getElementById( "full-terminal" ).innerHTML = '<div style="color: white; padding: 20px;">Terminal session ended.</div>';
+        }
+    
+        showTerminal() {
+            // document.getElementById( "full-terminal" ) = this.full_terminal;
+        }
+    */
+    openTerminal() {
+        // Remove existing overlay and menu shows
+        document.querySelector( '.overlay' ).classList.remove( 'show' );
+        document.querySelectorAll( '.dropdown-menu' ).forEach( menu => {
+            menu.classList.remove( 'show' );
+        } );
 
-    handleClose() {
-        document.body.innerHTML = '<div style="color: white; padding: 20px;">Terminal session ended.</div>';
+        // Get the full terminal element
+        const fullTerminal = document.getElementById( 'full-terminal' );
+
+        // Add terminal window class to make it visible
+        fullTerminal.classList.add( 'terminal-window' );
+
+        // Reset the terminal content if needed
+        fullTerminal.innerHTML = `
+        <div class="terminal-header">
+          <div class="window-buttons">
+            <div class="window-button close"></div>
+            <div class="window-button minimize"></div>
+            <div class="window-button maximize"></div>
+          </div>
+          <div class="terminal-title">rayees_ali@portfolio:~</div>
+        </div>
+        <div class="terminal-content" id="terminal">
+          <div class="line">
+            <h3 class="ascii-art">RAYEES ALI <strong>DBA</strong></h3>
+          </div>
+          <div class="line">
+            Welcome to Rayees Ali DBA's Portfolio Terminal v1.0
+          </div>
+          <div class="line">Type 'help' for available commands</div>
+          <div class="input-line">
+            <span class="prompt">rayees_ali@portfolio:~$</span>
+            <input type="text" class="input-field" autofocus />
+          </div>
+        </div>
+    `;
+
+        // Reinitialize terminal listeners
+        this.terminal = document.getElementById( 'terminal' );
+        this.input = document.querySelector( '.input-field' );
+
+        // Reattach event listeners
+        this.setupListeners();
+
+        // Focus on the input field
+        this.input.focus();
     }
 
+    // Modify handleClose method to reset terminal
+    handleClose() {
+        const fullTerminal = document.getElementById( 'full-terminal' );
+        fullTerminal.classList.remove( 'terminal-window' );
+    }
     handleMaximize() {
         if ( !document.fullscreenElement ) {
             document.documentElement.requestFullscreen().catch( err => {
